@@ -686,7 +686,18 @@ class Controller(object):
         attributes.verify_attributes(res_dict, attr_info)
 
         if is_create:  # POST
-            attributes.fill_default_value(attr_info, res_dict,
+            attr_info2 = attr_info
+            if resource == 'pool':
+                # v1
+                if 'subnet_id' in res_dict:
+                    from neutron_lbaas.extensions.loadbalancer import RESOURCE_ATTRIBUTE_MAP as v1MAP
+                    attr_info2 = v1MAP['pools'] 
+                # v2
+                else:
+                    from neutron_lbaas.extensions.loadbalancerv2 import RESOURCE_ATTRIBUTE_MAP as v2MAP
+                    attr_info2 = v2MAP['pools'] 
+                attr_info2['custom_attributes'] = attr_info['custom_attributes']
+            attributes.fill_default_value(attr_info2, res_dict,
                                           webob.exc.HTTPBadRequest)
         else:  # PUT
             for attr, attr_vals in six.iteritems(attr_info):
